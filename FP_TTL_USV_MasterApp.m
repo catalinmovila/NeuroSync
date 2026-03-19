@@ -177,7 +177,7 @@ UD.ui.logArea.Value = {sprintf('Ready. BaseDir: %s', rootDir)};
 fig.UserData = UD;
 
 appendLog(fig,'1) Select files in Setup.');
-appendLog(fig,'2) Run pipeline buttons per experiment (FP -> TTL sync -> USV shift -> Overview).');
+appendLog(fig,'2) Run pipeline buttons per experiment (FP -> TTL sync -> USV shift -> Overview / Event-locked / Reward exports).');
 appendLog(fig,'3) Use tabs and click Build/Refresh to embed viewers.');
 refreshUI(fig);
 
@@ -199,8 +199,8 @@ try
 catch
 end
 
-g = uigridlayout(ui.panel,[11 3]);
-g.RowHeight = {28,28,28,28,28,28,28,28,44,30,'1x'};
+g = uigridlayout(ui.panel,[13 3]);
+g.RowHeight = {28,28,28,28,28,28,28,28,44,34,34,30,'1x'};
 g.ColumnWidth = {170,'1x',110};
 g.Padding = [12 12 12 12];
 g.RowSpacing = 8;
@@ -291,9 +291,44 @@ ui.btnRunSync  = makeStepButton(btnRow,'Compute TTL sync',       fig, which, 'sy
 ui.btnRunShift = makeStepButton(btnRow,'Apply sync to USV',      fig, which, 'shift', col);
 ui.btnRunOver  = makeStepButton(btnRow,'Export overview Excel',  fig, which, 'overview', col);
 
+% Extra export row (event-locked / per-second Excel)
+btnRow2 = uigridlayout(g,[1 1]);
+btnRow2.Layout.Row = 10;
+btnRow2.Layout.Column = 1;
+try
+    btnRow2.Layout.ColumnSpan = 3;
+catch
+    try, btnRow2.Layout.Column = [1 3]; catch, end
+end
+
+btnRow2.ColumnWidth = {'1x'};
+btnRow2.RowHeight = {34};
+btnRow2.ColumnSpacing = 0;
+btnRow2.Padding = [0 0 0 0];
+
+ui.btnRunEventLocked = makeStepButton(btnRow2,'Export event-locked Excel', fig, which, 'eventlocked', col);
+
+% Reward-centered export row (food/drug event tables for article stats)
+btnRow3 = uigridlayout(g,[1 2]);
+btnRow3.Layout.Row = 11;
+btnRow3.Layout.Column = 1;
+try
+    btnRow3.Layout.ColumnSpan = 3;
+catch
+    try, btnRow3.Layout.Column = [1 3]; catch, end
+end
+
+btnRow3.ColumnWidth = {'1x','1x'};
+btnRow3.RowHeight = {34};
+btnRow3.ColumnSpacing = 10;
+btnRow3.Padding = [0 0 0 0];
+
+ui.btnRunRewardMetrics = makeStepButton(btnRow3,'Export reward-event metrics', fig, which, 'rewardmetrics', col);
+ui.btnRunRewardBins    = makeStepButton(btnRow3,'Export reward-bin table',   fig, which, 'rewardbins', col);
+
 % Status + Clear
 ui.lblStatus = uilabel(g,'Text','- | USV calls: -', 'FontWeight','bold','FontSize',12);
-ui.lblStatus.Layout.Row = 10;
+ui.lblStatus.Layout.Row = 12;
 ui.lblStatus.Layout.Column = 1;
 try
     ui.lblStatus.Layout.ColumnSpan = 2;
@@ -308,7 +343,7 @@ catch
 end
 
 ui.btnClear = uibutton(g,'Text','Clear','FontWeight','bold');
-ui.btnClear.Layout.Row = 10;
+ui.btnClear.Layout.Row = 12;
 ui.btnClear.Layout.Column = 3;
 
 % UI polish: clear is red
@@ -408,6 +443,10 @@ noteText = {
     ' '
     '  4) Export overview Excel'
     '     Needs: Corrected FP MAT + TTLBox CSV + USV MAT (shifted preferred)'
+    ' '
+    '  5) Export event-locked Excel'
+    '     Needs: TTLBox CSV (preferred), Corrected FP MAT for Peaks (optional),'
+    '     USV MAT (optional; shifted preferred)'
     ' '
     'Embedded tabs'
     '  - TimeOfEvents (MAIN): raw photometry CSV + TTLBox CSV'
@@ -796,6 +835,48 @@ try
         appendLog(fig, sprintf('[%s] Exporting overview Excel...', expTag(which)));
         exp.overviewXlsx = step4_export_overview(exp.fpMat, exp.ttlCsv, exp.usvShifted, exp.outDir, exp.syncXlsx, exp.ttlWav);
 
+    elseif strcmp(stepName,'eventlocked')
+        % Prefer shifted USV, but allow raw USV if shifted is not available.
+        usvForExport = '';
+        if isFileSafe(exp.usvShifted)
+            usvForExport = exp.usvShifted;
+        elseif isFileSafe(exp.usvMat)
+            usvForExport = exp.usvMat;
+        end
+
+        if ~isFileSafe(exp.ttlCsv) && ~isFileSafe(exp.fpMat) && ~isFileSafe(usvForExport)
+            error('Event-locked export needs at least one valid input (TTLBox CSV, Corrected FP MAT, or USV MAT).');
+        end
+
+        appendLog(fig, sprintf('[%s] Exporting event-locked Excel...', expTag(which)));
+        exp.eventLockedXlsx = step5_export_event_locked(exp.fpMat, exp.ttlCsv, usvForExport, exp.outDir, exp.syncXlsx);
+
+    elseif strcmp(stepName,'rewardmetrics')
+        requireFile(exp.ttlCsv,'TTLBox CSV');
+
+        usvForExport = '';
+        if isFileSafe(exp.usvShifted)
+            usvForExport = exp.usvShifted;
+        elseif isFileSafe(exp.usvMat)
+            usvForExport = exp.usvMat;
+        end
+
+        appendLog(fig, sprintf('[%s] Exporting reward-event metrics...', expTag(which)));
+        exp.rewardMetricsXlsx = step6_export_reward_metrics(exp.fpMat, exp.ttlCsv, usvForExport, exp.outDir, exp.syncXlsx);
+
+    elseif strcmp(stepName,'rewardbins')
+        requireFile(exp.ttlCsv,'TTLBox CSV');
+
+        usvForExport = '';
+        if isFileSafe(exp.usvShifted)
+            usvForExport = exp.usvShifted;
+        elseif isFileSafe(exp.usvMat)
+            usvForExport = exp.usvMat;
+        end
+
+        appendLog(fig, sprintf('[%s] Exporting reward-bin table...', expTag(which)));
+        exp.rewardBinsXlsx = step7_export_reward_bins(exp.fpMat, exp.ttlCsv, usvForExport, exp.outDir, exp.syncXlsx);
+
     else
         return
     end
@@ -1159,6 +1240,9 @@ exp.usvMat       = '';
 exp.syncXlsx     = '';
 exp.usvShifted   = '';
 exp.overviewXlsx = '';
+exp.eventLockedXlsx = '';
+exp.rewardMetricsXlsx = '';
+exp.rewardBinsXlsx = '';
 
 exp.outDir     = '';
 exp.anchorPath = '';
