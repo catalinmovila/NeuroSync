@@ -15,5 +15,4 @@ A compact GUI for bringing **fiber photometry (FP)**, **behavioral logs (TTLBox)
 ## Synchronization algorithm
 **Affine Timebase Mapping (ATM)**  
 
-
-<iframe src="https://docs.google.com/presentation/d/e/2PACX-1vQmRHWuTsihhUX6S6vKhXWTJFMvDaloy7AO2cZGQC3Fzdx6DR-IegAT9FSu5J55-Q/pubembed?start=false&loop=false&delayms=3000" frameborder="0" width="1280" height="749" allowfullscreen="true" mozallowfullscreen="true" webkitallowfullscreen="true"></iframe>
+[![View Slides](https://img.shields.io/badge/View-Presentation-blue?style=for-the-badge)](https://docs.google.com/presentation/d/e/2PACX-1vQmRHWuTsihhUX6S6vKhXWTJFMvDaloy7AO2cZGQC3Fzdx6DR-IegAT9FSu5J55-Q/pubembed)
