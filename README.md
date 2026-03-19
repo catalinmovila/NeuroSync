@@ -25,7 +25,7 @@ The synchronization workflow is based on an affine timebase mapping approach use
 </p>
 
 <p align="center">
-  <em>Click the preview to open the full presentation.</em>
+  <em>.</em>
 </p>
 
 <p align="center">
