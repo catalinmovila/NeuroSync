@@ -16,4 +16,4 @@ A compact GUI for bringing **fiber photometry (FP)**, **behavioral logs (TTLBox)
 **Affine Timebase Mapping (ATM)**  
 
 
-[Catalin_PPT_UPDATED.pptx](https://github.com/user-attachments/files/26122725/Catalin_PPT_UPDATED.pptx)
+<iframe src="https://docs.google.com/presentation/d/e/2PACX-1vQmRHWuTsihhUX6S6vKhXWTJFMvDaloy7AO2cZGQC3Fzdx6DR-IegAT9FSu5J55-Q/pubembed?start=false&loop=false&delayms=5000" frameborder="0" width="1920" height="1109" allowfullscreen="true" mozallowfullscreen="true" webkitallowfullscreen="true"></iframe>
