@@ -9,8 +9,8 @@ A compact GUI for bringing **fiber photometry (FP)**, **behavioral logs (TTLBox)
 
 ## What’s in this repository
 - **GUI entrypoint** for running the pipeline and inspecting results at session scale
-- **Step-wise processing modules** for signal correction, synchronization, and USV timeline shifting
-- **Viewers** for full-session browsing and event inspection
+- **Step-wise processing modules** (signal correction, synchronization, USV timeline shift)
+- **Viewers** for full-session browsing + event inspection
 - **Export utilities**
 
 ## Synchronization algorithm
